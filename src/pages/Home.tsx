@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ArrowRight, 
@@ -14,8 +14,17 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { artworks } from '../data/artworks';
+import MessageModal from '../components/MessageModal';
 
 export default function Home() {
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const testimonials = [
     {
       name: "Sarah Ahmed",
@@ -36,6 +45,16 @@ export default function Home() {
       artwork: "Eternal Forms"
     }
   ];
+
+  const handleCommissionSubmit = (formData: any) => {
+    console.log('Commission form submitted:', formData);
+    // Here you would typically send the data to your backend
+  };
+
+  const handleContactSubmit = (formData: any) => {
+    console.log('Contact form submitted:', formData);
+    // Here you would typically send the data to your backend
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -69,13 +88,13 @@ export default function Home() {
               <span>View Gallery</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a 
-              href="#commissions" 
+            <button 
+              onClick={() => setIsCommissionModalOpen(true)}
               className="inline-flex items-center justify-center space-x-2 border-2 border-white text-white px-8 py-4 rounded-full font-medium hover:bg-white hover:text-gray-900 transition-all duration-300"
             >
               <span>Request Commission</span>
               <Palette className="w-5 h-5" />
-            </a>
+            </button>
           </div>
         </div>
       </section>
@@ -342,104 +361,18 @@ export default function Home() {
               <h3 className="font-playfair text-2xl font-semibold text-gray-900 mb-6">
                 Request a Commission
               </h3>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      placeholder="Your full name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="project-type" className="block text-sm font-medium text-gray-700 mb-2">
-                    Project Type *
-                  </label>
-                  <select
-                    id="project-type"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  >
-                    <option value="">Select project type</option>
-                    <option value="painting">Custom Painting</option>
-                    <option value="sculpture">Sculpture Commission</option>
-                    <option value="stage-design">Stage Design</option>
-                    <option value="costume-design">Costume Design</option>
-                    <option value="mixed">Mixed Media Project</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget Range
-                  </label>
-                  <select
-                    id="budget"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  >
-                    <option value="">Select budget range</option>
-                    <option value="under-1000">Under $1,000</option>
-                    <option value="1000-3000">$1,000 - $3,000</option>
-                    <option value="3000-5000">$3,000 - $5,000</option>
-                    <option value="5000-10000">$5,000 - $10,000</option>
-                    <option value="over-10000">Over $10,000</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                    Project Description *
-                  </label>
-                  <textarea
-                    id="description"
-                    rows={5}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Please describe your vision, requirements, dimensions, timeline, and any specific details..."
-                  ></textarea>
-                </div>
-                
-                <div>
-                  <label htmlFor="reference" className="block text-sm font-medium text-gray-700 mb-2">
-                    Reference Images/Links
-                  </label>
-                  <input
-                    type="text"
-                    id="reference"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Share any reference images or inspiration links"
-                  />
-                </div>
-                
+              <div className="text-center">
+                <p className="text-gray-600 mb-8">
+                  Ready to start your custom artwork project? Click below to open our detailed commission request form.
+                </p>
                 <button
-                  type="submit"
+                  onClick={() => setIsCommissionModalOpen(true)}
                   className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
                 >
-                  <span>Submit Commission Request</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <Palette className="w-5 h-5" />
+                  <span>Open Commission Form</span>
                 </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
@@ -522,67 +455,18 @@ export default function Home() {
               <h3 className="font-playfair text-2xl font-semibold text-gray-900 mb-6">
                 Send a Message
               </h3>
-              <form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="contact-name"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      placeholder="Your name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="contact-email"
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="What's this about?"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Message *
-                  </label>
-                  <textarea
-                    id="contact-message"
-                    rows={5}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                    placeholder="Your message..."
-                  ></textarea>
-                </div>
-                
+              <div className="text-center">
+                <p className="text-gray-600 mb-8">
+                  Have a question or want to discuss a project? Click below to open our contact form.
+                </p>
                 <button
-                  type="submit"
-                  className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  onClick={() => setIsContactModalOpen(true)}
+                  className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
                 >
-                  Send Message
+                  <Mail className="w-5 h-5" />
+                  <span>Open Contact Form</span>
                 </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
@@ -621,6 +505,19 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Modals */}
+      <MessageModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        type="contact"
+      />
+
+      <MessageModal
+        isOpen={isCommissionModalOpen}
+        onClose={() => setIsCommissionModalOpen(false)}
+        type="commission"
+      />
     </div>
   );
 }

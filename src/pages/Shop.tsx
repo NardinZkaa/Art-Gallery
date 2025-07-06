@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, Heart, Star, Eye, X } from 'lucide-react';
 import { artworks } from '../data/artworks';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,11 @@ export default function Shop() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
   const { addToCart } = useCart();
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const categories = [
     { id: 'all', name: 'All Items' },

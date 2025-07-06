@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, Heart, ArrowLeft, X } from 'lucide-react';
 import { artworks } from '../data/artworks';
 import { useCart } from '../context/CartContext';
+import MessageModal from '../components/MessageModal';
 
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
+  const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+  const [commissionArtwork, setCommissionArtwork] = useState<string>('');
   const { addToCart } = useCart();
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const categories = [
     { id: 'all', name: 'All Works' },
@@ -24,6 +32,12 @@ export default function Gallery() {
     if (artwork.available && artwork.price !== 'Commission') {
       addToCart(artwork);
     }
+  };
+
+  const handleCommissionRequest = (artworkTitle: string) => {
+    setCommissionArtwork(artworkTitle);
+    setIsCommissionModalOpen(true);
+    setSelectedArtwork(null);
   };
 
   return (
@@ -217,10 +231,7 @@ export default function Gallery() {
                         </button>
                       ) : selectedArtwork.price === 'Commission' ? (
                         <button
-                          onClick={() => {
-                            setSelectedArtwork(null);
-                            document.getElementById('commissions')?.scrollIntoView({ behavior: 'smooth' });
-                          }}
+                          onClick={() => handleCommissionRequest(selectedArtwork.title)}
                           className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                         >
                           Request Commission
@@ -251,6 +262,14 @@ export default function Gallery() {
           </div>
         </div>
       )}
+
+      {/* Commission Modal */}
+      <MessageModal
+        isOpen={isCommissionModalOpen}
+        onClose={() => setIsCommissionModalOpen(false)}
+        type="commission"
+        artworkTitle={commissionArtwork}
+      />
     </div>
   );
 }

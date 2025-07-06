@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import CheckoutModal from '../components/CheckoutModal';
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleQuantityChange = (artworkId: number, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -182,7 +189,10 @@ export default function Cart() {
                 </div>
               </div>
               
-              <button className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 mb-4">
+              <button 
+                onClick={() => setIsCheckoutModalOpen(true)}
+                className="w-full bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2 mb-4"
+              >
                 <CreditCard className="w-5 h-5" />
                 <span>Proceed to Checkout</span>
               </button>
@@ -202,6 +212,12 @@ export default function Cart() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+      />
     </div>
   );
 }

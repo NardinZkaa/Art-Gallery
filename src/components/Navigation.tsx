@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -32,11 +32,24 @@ export default function Navigation() {
     setIsMenuOpen(false);
   };
 
+  const handlePageNavigation = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+    // Scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="font-playfair font-bold text-xl text-gray-900">
+          <Link 
+            to="/" 
+            onClick={() => handlePageNavigation('/')}
+            className="font-playfair font-bold text-xl text-gray-900"
+          >
             Philip Boles
           </Link>
           
@@ -44,18 +57,21 @@ export default function Navigation() {
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               to="/" 
+              onClick={() => handlePageNavigation('/')}
               className={`transition-colors ${isActive('/') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
             >
               Home
             </Link>
             <Link 
               to="/gallery" 
+              onClick={() => handlePageNavigation('/gallery')}
               className={`transition-colors ${isActive('/gallery') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
             >
               Gallery
             </Link>
             <Link 
               to="/shop" 
+              onClick={() => handlePageNavigation('/shop')}
               className={`transition-colors ${isActive('/shop') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
             >
               Shop
@@ -75,6 +91,7 @@ export default function Navigation() {
             
             <Link 
               to="/cart" 
+              onClick={() => handlePageNavigation('/cart')}
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <ShoppingBag className="w-6 h-6" />
@@ -90,6 +107,7 @@ export default function Navigation() {
           <div className="md:hidden flex items-center space-x-4">
             <Link 
               to="/cart" 
+              onClick={() => handlePageNavigation('/cart')}
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <ShoppingBag className="w-6 h-6" />
@@ -114,22 +132,22 @@ export default function Navigation() {
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/" 
+                onClick={() => handlePageNavigation('/')}
                 className={`transition-colors ${isActive('/') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
-                onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link 
                 to="/gallery" 
+                onClick={() => handlePageNavigation('/gallery')}
                 className={`transition-colors ${isActive('/gallery') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
-                onClick={() => setIsMenuOpen(false)}
               >
                 Gallery
               </Link>
               <Link 
                 to="/shop" 
+                onClick={() => handlePageNavigation('/shop')}
                 className={`transition-colors ${isActive('/shop') ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`}
-                onClick={() => setIsMenuOpen(false)}
               >
                 Shop
               </Link>

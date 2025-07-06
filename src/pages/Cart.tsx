@@ -7,11 +7,22 @@ import CheckoutModal from '../components/CheckoutModal';
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Handle success messages
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
 
   const handleQuantityChange = (artworkId: number, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -25,9 +36,26 @@ export default function Cart() {
     return parseFloat(price.replace('$', '').replace(',', ''));
   };
 
+  const handleCheckoutSuccess = () => {
+    setShowSuccessMessage('Purchase completed successfully! You will receive a confirmation email shortly.');
+    setIsCheckoutModalOpen(false);
+  };
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-white pt-16">
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg animate-slide-down">
+            <div className="flex items-center space-x-2">
+              <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+              </div>
+              <span className="font-medium">{showSuccessMessage}</span>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <h1 className="font-playfair text-4xl font-bold text-gray-900 mb-8">Your Cart</h1>
@@ -60,6 +88,18 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-white pt-16">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg animate-slide-down">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+            </div>
+            <span className="font-medium">{showSuccessMessage}</span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -217,6 +257,7 @@ export default function Cart() {
       <CheckoutModal
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
+        onSuccess={handleCheckoutSuccess}
       />
     </div>
   );

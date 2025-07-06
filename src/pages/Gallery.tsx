@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Heart, ArrowLeft, X } from 'lucide-react';
+import { Eye, Heart, ArrowLeft, X, MessageCircle, Palette } from 'lucide-react';
 import { artworks } from '../data/artworks';
-import { useCart } from '../context/CartContext';
 import MessageModal from '../components/MessageModal';
 
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
   const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [commissionArtwork, setCommissionArtwork] = useState<string>('');
-  const { addToCart } = useCart();
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Handle success messages
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
 
   const categories = [
     { id: 'all', name: 'All Works' },
@@ -28,20 +38,42 @@ export default function Gallery() {
     ? artworks 
     : artworks.filter(artwork => artwork.category === selectedCategory);
 
-  const handleAddToCart = (artwork: any) => {
-    if (artwork.available && artwork.price !== 'Commission') {
-      addToCart(artwork);
-    }
-  };
-
   const handleCommissionRequest = (artworkTitle: string) => {
     setCommissionArtwork(artworkTitle);
     setIsCommissionModalOpen(true);
     setSelectedArtwork(null);
   };
 
+  const handleContactInquiry = (artworkTitle: string) => {
+    setCommissionArtwork(artworkTitle);
+    setIsContactModalOpen(true);
+    setSelectedArtwork(null);
+  };
+
+  const handleCommissionSuccess = () => {
+    setShowSuccessMessage('Commission request sent successfully! Philip will contact you within 24 hours.');
+    setIsCommissionModalOpen(false);
+  };
+
+  const handleContactSuccess = () => {
+    setShowSuccessMessage('Message sent successfully! Philip will get back to you soon.');
+    setIsContactModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-white pt-16">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg animate-slide-down">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+            </div>
+            <span className="font-medium">{showSuccessMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -99,14 +131,14 @@ export default function Gallery() {
                   {!artwork.available && (
                     <div className="absolute top-4 left-4">
                       <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Sold
+                        Private Collection
                       </span>
                     </div>
                   )}
                   {artwork.price === 'Commission' && (
                     <div className="absolute top-4 left-4">
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Commission
+                        Commission Work
                       </span>
                     </div>
                   )}
@@ -126,8 +158,8 @@ export default function Gallery() {
                 <p className="text-gray-500 text-sm mb-4">{artwork.size} | {artwork.year}</p>
                 
                 <div className="flex justify-between items-center">
-                  <span className="font-playfair text-2xl font-bold text-gray-900">
-                    {artwork.price}
+                  <span className="font-playfair text-lg font-semibold text-gray-700">
+                    {artwork.price === 'Commission' ? 'Commission Work' : 'Original Artwork'}
                   </span>
                   <button className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
                     View Details
@@ -168,7 +200,7 @@ export default function Gallery() {
                   {!selectedArtwork.available && (
                     <div className="absolute top-4 left-4">
                       <span className="bg-red-500 text-white px-4 py-2 rounded-full font-medium">
-                        Sold
+                        Private Collection
                       </span>
                     </div>
                   )}
@@ -204,6 +236,14 @@ export default function Gallery() {
                       <p className="text-gray-700">
                         <span className="font-semibold">Year:</span> {selectedArtwork.year}
                       </p>
+                      <p className="text-gray-700">
+                        <span className="font-semibold">Status:</span> 
+                        {selectedArtwork.available ? (
+                          <span className="text-green-600 ml-2">Available for viewing</span>
+                        ) : (
+                          <span className="text-red-600 ml-2">Private Collection</span>
+                        )}
+                      </p>
                     </div>
                     
                     <p className="text-gray-700 leading-relaxed mb-8">
@@ -212,48 +252,37 @@ export default function Gallery() {
                   </div>
                   
                   <div className="border-t border-gray-200 pt-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="font-playfair text-3xl font-bold text-gray-900">
-                        {selectedArtwork.price}
-                      </span>
-                      {selectedArtwork.available && selectedArtwork.price !== 'Commission' && (
-                        <span className="text-green-600 font-medium">Available</span>
-                      )}
+                    <div className="mb-6">
+                      <h3 className="font-playfair text-xl font-semibold text-gray-900 mb-4">
+                        Interested in this artwork?
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        Contact Philip to discuss this piece, request similar commissions, or inquire about availability.
+                      </p>
                     </div>
                     
                     <div className="flex space-x-4">
-                      {selectedArtwork.available && selectedArtwork.price !== 'Commission' ? (
-                        <button
-                          onClick={() => handleAddToCart(selectedArtwork)}
-                          className="flex-1 bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-                        >
-                          Add to Cart
-                        </button>
-                      ) : selectedArtwork.price === 'Commission' ? (
-                        <button
-                          onClick={() => handleCommissionRequest(selectedArtwork.title)}
-                          className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                        >
-                          Request Commission
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="flex-1 bg-gray-300 text-gray-500 py-4 px-6 rounded-lg font-medium cursor-not-allowed"
-                        >
-                          Sold Out
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleCommissionRequest(selectedArtwork.title)}
+                        className="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <Palette className="w-5 h-5" />
+                        <span>Request Similar Commission</span>
+                      </button>
                       
-                      <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Heart className="w-6 h-6 text-gray-600" />
+                      <button 
+                        onClick={() => handleContactInquiry(selectedArtwork.title)}
+                        className="flex-1 bg-gray-900 text-white py-4 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center space-x-2"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Inquire About Piece</span>
                       </button>
                     </div>
                     
                     <div className="mt-6 text-sm text-gray-500 space-y-1">
-                      <p>• Certificate of authenticity included</p>
-                      <p>• Professional packaging and shipping</p>
-                      <p>• 30-day return policy</p>
+                      <p>• All inquiries receive a response within 24 hours</p>
+                      <p>• Commission consultations available</p>
+                      <p>• Studio visits by appointment</p>
                     </div>
                   </div>
                 </div>
@@ -269,6 +298,16 @@ export default function Gallery() {
         onClose={() => setIsCommissionModalOpen(false)}
         type="commission"
         artworkTitle={commissionArtwork}
+        onSuccess={handleCommissionSuccess}
+      />
+
+      {/* Contact Modal */}
+      <MessageModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        type="contact"
+        artworkTitle={commissionArtwork}
+        onSuccess={handleContactSuccess}
       />
     </div>
   );

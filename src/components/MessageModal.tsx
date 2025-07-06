@@ -6,9 +6,10 @@ interface MessageModalProps {
   onClose: () => void;
   type: 'contact' | 'commission';
   artworkTitle?: string;
+  onSuccess?: () => void;
 }
 
-export default function MessageModal({ isOpen, onClose, type, artworkTitle }: MessageModalProps) {
+export default function MessageModal({ isOpen, onClose, type, artworkTitle, onSuccess }: MessageModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -41,7 +42,7 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle }: Me
     setIsSubmitting(false);
     setIsSubmitted(true);
 
-    // Reset form after 3 seconds
+    // Reset form after 3 seconds and call success callback
     setTimeout(() => {
       setIsSubmitted(false);
       setFormData({
@@ -56,6 +57,9 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle }: Me
         reference: ''
       });
       onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
     }, 3000);
   };
 
@@ -175,6 +179,7 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle }: Me
                     <option value="stage-design">Stage Design</option>
                     <option value="costume-design">Costume Design</option>
                     <option value="mixed">Mixed Media Project</option>
+                    <option value="similar-to-artwork">Similar to {artworkTitle}</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
@@ -248,7 +253,7 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle }: Me
                   value={formData.subject}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder="What's this about?"
+                  placeholder={artworkTitle ? `Inquiry about ${artworkTitle}` : "What's this about?"}
                 />
               </div>
             )}
@@ -268,6 +273,8 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle }: Me
                 placeholder={
                   type === 'commission'
                     ? "Please describe your vision, requirements, dimensions, and any specific details..."
+                    : artworkTitle 
+                    ? `I'm interested in learning more about "${artworkTitle}"...`
                     : "Your message..."
                 }
               ></textarea>

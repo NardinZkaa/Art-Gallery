@@ -5,9 +5,10 @@ import { useCart } from '../context/CartContext';
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
+export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps) {
   const { items, getTotalPrice, clearCart } = useCart();
   const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -62,11 +63,14 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     setIsProcessing(false);
     setStep('success');
     
-    // Clear cart after successful purchase
+    // Clear cart and close modal after successful purchase
     setTimeout(() => {
       clearCart();
       onClose();
       setStep('shipping');
+      if (onSuccess) {
+        onSuccess();
+      }
     }, 5000);
   };
 

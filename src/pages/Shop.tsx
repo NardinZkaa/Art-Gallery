@@ -7,12 +7,23 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
   const { addToCart } = useCart();
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Handle success messages
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage('');
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
 
   const categories = [
     { id: 'all', name: 'All Items' },
@@ -34,6 +45,11 @@ export default function Shop() {
 
   const handleAddToCart = (artwork: any) => {
     addToCart(artwork);
+    setShowSuccessMessage(`"${artwork.title}" has been added to your cart!`);
+    // Close modal if open
+    if (selectedArtwork) {
+      setSelectedArtwork(null);
+    }
   };
 
   const formatPrice = (price: string) => {
@@ -42,6 +58,18 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen bg-white pt-16">
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg animate-slide-down">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+            </div>
+            <span className="font-medium">{showSuccessMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="relative py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

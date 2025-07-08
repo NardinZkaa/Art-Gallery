@@ -8,6 +8,7 @@ export default function Shop() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
+  const [showModalSuccessMessage, setShowModalSuccessMessage] = useState<string>('');
   const { addToCart } = useCart();
 
   // Scroll to top when component mounts
@@ -24,6 +25,16 @@ export default function Shop() {
       return () => clearTimeout(timer);
     }
   }, [showSuccessMessage]);
+
+  // Handle modal success messages
+  useEffect(() => {
+    if (showModalSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowModalSuccessMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showModalSuccessMessage]);
 
   const categories = [
     { id: 'all', name: 'All Items' },
@@ -45,10 +56,12 @@ export default function Shop() {
 
   const handleAddToCart = (artwork: any) => {
     addToCart(artwork);
-    setShowSuccessMessage(`"${artwork.title}" has been added to your cart!`);
-    // Close modal if open
     if (selectedArtwork) {
-      setSelectedArtwork(null);
+      // Show success message in modal
+      setShowModalSuccessMessage(`"${artwork.title}" has been added to your cart!`);
+    } else {
+      // Show success message at page level
+      setShowSuccessMessage(`"${artwork.title}" has been added to your cart!`);
     }
   };
 
@@ -211,6 +224,18 @@ export default function Shop() {
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div className="relative">
+              {/* Modal Success Message */}
+              {showModalSuccessMessage && (
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg animate-slide-down">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                    </div>
+                    <span className="font-medium text-sm">{showModalSuccessMessage}</span>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={() => setSelectedArtwork(null)}
                 className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:bg-white transition-colors"

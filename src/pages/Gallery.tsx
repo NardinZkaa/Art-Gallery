@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Heart, ArrowLeft, X, MessageCircle, Palette } from 'lucide-react';
-import { artworks } from '../data/artworks';
+import { useArtworks } from '../hooks/useArtworks';
+import { fallbackArtworks } from '../data/artworks';
 import MessageModal from '../components/MessageModal';
 
 export default function Gallery() {
@@ -10,6 +11,7 @@ export default function Gallery() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [commissionArtwork, setCommissionArtwork] = useState<string>('');
   const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
+  const { artworks, loading, error } = useArtworks();
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -34,9 +36,12 @@ export default function Gallery() {
     { id: 'costume', name: 'Costume Design' }
   ];
 
+  // Use fallback data if there's an error or no data
+  const displayArtworks = error || artworks.length === 0 ? fallbackArtworks : artworks;
+  
   const filteredArtworks = selectedCategory === 'all' 
-    ? artworks 
-    : artworks.filter(artwork => artwork.category === selectedCategory);
+    ? displayArtworks 
+    : displayArtworks.filter(artwork => artwork.category === selectedCategory);
 
   const handleCommissionRequest = (artworkTitle: string) => {
     setCommissionArtwork(artworkTitle);
@@ -89,8 +94,26 @@ export default function Gallery() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading artworks...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-700 text-sm">
+              Unable to load artworks from database. Showing sample collection.
+            </p>
+          </div>
+        )}
+
         {/* Category Filter */}
-        <div className="mb-12">
+        {!loading && (
+          <div className="mb-12">
           <div className="flex flex-wrap justify-center gap-4">
             {categories.map((category) => (
               <button
@@ -106,10 +129,12 @@ export default function Gallery() {
               </button>
             ))}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Artwork Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredArtworks.map((artwork) => (
             <div
               key={artwork.id}
@@ -168,9 +193,10 @@ export default function Gallery() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
-        {filteredArtworks.length === 0 && (
+        {!loading && filteredArtworks.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg">No artworks found in this category.</p>
           </div>

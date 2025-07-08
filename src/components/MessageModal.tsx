@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send, CheckCircle } from 'lucide-react';
+import { ContactService } from '../services/contactService';
 
 interface MessageModalProps {
   isOpen: boolean;
@@ -23,44 +24,65 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle, onSu
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const contactData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message,
+        type,
+        artworkTitle,
+        projectDetails: type === 'commission' ? {
+          projectType: formData.projectType,
+          budget: formData.budget,
+          timeline: formData.timeline,
+          reference: formData.reference
+        } : undefined
+      };
 
-    console.log('Form submitted:', { type, artworkTitle, ...formData });
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      await ContactService.submitContactForm(contactData);
+      setIsSubmitted(true);
 
-    // Reset form after 3 seconds and call success callback
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-        projectType: '',
-        budget: '',
-        timeline: '',
-        reference: ''
-      });
-      onClose();
-      if (onSuccess) {
-        onSuccess();
-      }
-    }, 3000);
+      // Reset form after 3 seconds and call success callback
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+          projectType: '',
+          budget: '',
+          timeline: '',
+          reference: ''
+        });
+        onClose();
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -108,6 +130,12 @@ export default function MessageModal({ isOpen, onClose, type, artworkTitle, onSu
               </p>
             )}
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

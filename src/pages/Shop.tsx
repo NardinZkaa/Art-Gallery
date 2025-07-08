@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, Heart, Star, Eye, X } from 'lucide-react';
-import { artworks } from '../data/artworks';
+import { useArtworks } from '../hooks/useArtworks';
+import { fallbackArtworks } from '../data/artworks';
 import { useCart } from '../context/CartContext';
 
 export default function Shop() {
@@ -10,11 +11,27 @@ export default function Shop() {
   const [showSuccessMessage, setShowSuccessMessage] = useState<string>('');
   const [showModalSuccessMessage, setShowModalSuccessMessage] = useState<string>('');
   const { addToCart } = useCart();
+  const { getAvailableArtworks, loading, error } = useArtworks();
+  const [shopItems, setShopItems] = useState<any[]>([]);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
+    loadShopItems();
   }, []);
+
+  const loadShopItems = async () => {
+    try {
+      const availableArtworks = await getAvailableArtworks();
+      setShopItems(availableArtworks);
+    } catch (err) {
+      // Use fallback data if there's an error
+      const fallbackShopItems = fallbackArtworks.filter(artwork => 
+        artwork.available && artwork.price !== 'Commission'
+      );
+      setShopItems(fallbackShopItems);
+    }
+  };
 
   // Handle success messages
   useEffect(() => {
@@ -41,11 +58,6 @@ export default function Shop() {
     { id: 'painting', name: 'Paintings' },
     { id: 'sculpture', name: 'Sculptures' }
   ];
-
-  // Filter only available items for purchase (excluding commission works)
-  const shopItems = artworks.filter(artwork => 
-    artwork.available && artwork.price !== 'Commission'
-  );
 
   const filteredItems = shopItems.filter(artwork => {
     const matchesCategory = selectedCategory === 'all' || artwork.category === selectedCategory;
@@ -98,8 +110,26 @@ export default function Shop() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16">
+            <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading available artworks...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-700 text-sm">
+              Unable to load artworks from database. Showing sample collection.
+            </p>
+          </div>
+        )}
+
         {/* Search and Filter Section */}
-        <div className="mb-12 space-y-6">
+        {!loading && (
+          <div className="mb-12 space-y-6">
           {/* Search Bar */}
           <div className="relative max-w-md mx-auto">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -128,10 +158,12 @@ export default function Shop() {
               </button>
             ))}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredItems.map((artwork) => (
             <div
               key={artwork.id}
@@ -210,9 +242,10 @@ export default function Shop() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
-        {filteredItems.length === 0 && (
+        {!loading && filteredItems.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg">No items found matching your criteria.</p>
           </div>

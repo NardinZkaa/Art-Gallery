@@ -9,6 +9,7 @@ export interface Artwork {
   image: string;
   description: string;
   available: boolean;
+  databaseId?: string; // UUID from database
 }
 
 export interface CartItem {

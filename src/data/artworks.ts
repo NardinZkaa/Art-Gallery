@@ -1,6 +1,8 @@
 import { Artwork } from '../types';
+import { useArtworks } from '../hooks/useArtworks';
 
-export const artworks: Artwork[] = [
+// Fallback data for when Supabase is not available
+export const fallbackArtworks: Artwork[] = [
   {
     id: 1,
     title: "Desert Convergence",
@@ -98,3 +100,6 @@ export const artworks: Artwork[] = [
     available: true
   }
 ];
+
+// Export artworks - this will be replaced by database calls in components
+export const artworks = fallbackArtworks;

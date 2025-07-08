@@ -13,17 +13,22 @@ import {
   MapPin,
   MessageCircle
 } from 'lucide-react';
-import { artworks } from '../data/artworks';
+import { useArtworks } from '../hooks/useArtworks';
+import { fallbackArtworks } from '../data/artworks';
 import MessageModal from '../components/MessageModal';
 
 export default function Home() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
+  const { artworks, loading, error } = useArtworks();
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Use fallback data if there's an error or no data
+  const displayArtworks = error || artworks.length === 0 ? fallbackArtworks : artworks;
 
   const testimonials = [
     {
@@ -202,8 +207,24 @@ export default function Home() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {artworks.slice(0, 3).map((artwork) => (
+          {loading && (
+            <div className="text-center py-16">
+              <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading featured works...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-2xl mx-auto">
+              <p className="text-yellow-700 text-sm text-center">
+                Unable to load latest works from database. Showing sample collection.
+              </p>
+            </div>
+          )}
+
+          {!loading && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {displayArtworks.slice(0, 3).map((artwork) => (
               <div key={artwork.id} className="group cursor-pointer">
                 <div className="overflow-hidden rounded-lg shadow-lg mb-4">
                   <img 
@@ -219,7 +240,8 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
           
           <div className="text-center">
             <Link 
@@ -483,7 +505,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {artworks.slice(0, 6).map((artwork, index) => (
+            {displayArtworks.slice(0, 6).map((artwork, index) => (
               <div key={index} className="aspect-square overflow-hidden rounded-lg">
                 <img 
                   src={artwork.image}

@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Lock, CheckCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../hooks/useAuth';
+import { OrderService } from '../services/orderService';
+import { PaymentService } from '../services/paymentService';
+import AuthModal from './AuthModal';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -10,8 +14,11 @@ interface CheckoutModalProps {
 
 export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps) {
   const { items, getTotalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [error, setError] = useState<string>('');
   
   const [shippingData, setShippingData] = useState({
     firstName: '',
@@ -32,11 +39,19 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
     nameOnCard: ''
   });
 
+  // Check if user is authenticated when modal opens
+  React.useEffect(() => {
+    if (isOpen && !user) {
+      setIsAuthModalOpen(true);
+    }
+  }, [isOpen, user]);
+
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setShippingData({
       ...shippingData,
       [e.target.name]: e.target.value
     });
+    setError('');
   };
 
   const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,40 +59,76 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
       ...paymentData,
       [e.target.name]: e.target.value
     });
+    setError('');
   };
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     setStep('payment');
   };
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     setIsProcessing(true);
+    setError('');
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+      // Create order in database
+      const orderId = await OrderService.createOrder({
+        userId: user.id,
+        items,
+        shippingAddress: shippingData,
+        totalAmount: getTotalPrice()
+      });
 
-    console.log('Order processed:', { shippingData, paymentData, items, total: getTotalPrice() });
-    
-    setIsProcessing(false);
-    setStep('success');
-    
-    // Clear cart and close modal after successful purchase
-    setTimeout(() => {
-      clearCart();
-      onClose();
-      setStep('shipping');
-      if (onSuccess) {
-        onSuccess();
+      // Process payment
+      const paymentSuccess = await PaymentService.processCheckout(
+        orderId,
+        getTotalPrice(),
+        paymentData
+      );
+
+      if (paymentSuccess) {
+        setStep('success');
+        
+        // Clear cart and close modal after successful purchase
+        setTimeout(() => {
+          clearCart();
+          onClose();
+          setStep('shipping');
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 5000);
+      } else {
+        throw new Error('Payment processing failed');
       }
-    }, 5000);
+    } catch (error) {
+      console.error('Checkout error:', error);
+      setError(error instanceof Error ? error.message : 'Checkout failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setIsAuthModalOpen(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <>
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="relative">
           <button
@@ -118,6 +169,12 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
               <p className="text-sm text-gray-500">
                 Closing automatically in 5 seconds...
               </p>
+            {error && (
+              <div className="absolute top-16 left-4 right-4 z-10 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+
             </div>
           ) : (
             <div className="grid lg:grid-cols-2 gap-8 p-8">
@@ -174,6 +231,14 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
                     <h2 className="font-playfair text-2xl font-bold text-gray-900 mb-6">
                       Shipping Information
                     </h2>
+                      {!user && (
+                        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-blue-700 text-sm">
+                            Please sign in or create an account to continue with checkout.
+                          </p>
+                        </div>
+                      )}
+
                     
                     <form onSubmit={handleShippingSubmit} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -329,7 +394,7 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
                       <button
                         onClick={() => setStep('shipping')}
                         className="text-gray-600 hover:text-gray-800 transition-colors"
-                      >
+                          {user ? 'Continue to Payment' : 'Sign In to Continue'}
                         ← Back to Shipping
                       </button>
                     </div>
@@ -427,6 +492,14 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutMo
           )}
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        initialMode="signin"
+      />
+    </>
     </div>
   );
 }

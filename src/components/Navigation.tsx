@@ -117,6 +117,46 @@ export default function Navigation() {
                 </span>
               )}
             </Link>
+
+            {/* User Menu */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 transition-colors"
+                >
+                  <User className="w-6 h-6" />
+                  <span className="text-sm font-medium">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </span>
+                </button>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">
+                        {user.user_metadata?.full_name || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -225,43 +265,3 @@ export default function Navigation() {
     </>
   );
 }
-
-              {/* User Menu */}
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 p-2 text-gray-700 hover:text-gray-900 transition-colors"
-                  >
-                    <User className="w-6 h-6" />
-                    <span className="text-sm font-medium">
-                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                    </span>
-                  </button>
-
-                  {showUserMenu && (
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">
-                          {user.user_metadata?.full_name || 'User'}
-                        </p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Sign In
-                </button>
-              )}

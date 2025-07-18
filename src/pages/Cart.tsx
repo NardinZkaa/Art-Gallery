@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowLeft, CreditCard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import CheckoutModal from '../components/CheckoutModal';
+import { CheckoutModal } from '../components/CheckoutModal';
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart, getTotalPrice } = useCart();

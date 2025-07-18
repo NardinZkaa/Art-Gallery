@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Lock, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { paymentService } from '../services/paymentService';
+import { PaymentService } from '../services/paymentService';
 import { OrderService } from '../services/orderService';
 import { useAuth } from '../hooks/useAuth';
 
@@ -89,7 +89,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
       setStep('processing');
 
       // Create payment intent
-      const paymentIntent = await paymentService.createPaymentIntent({
+      const paymentIntent = await PaymentService.createPaymentIntent({
         amount: Math.round(total * 100), // Convert to cents
         currency: 'usd',
         metadata: {
